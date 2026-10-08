@@ -35,3 +35,7 @@ On the iPad, check portrait orientation, the selected remote display, editor/ter
 ## v0.3.0 local Retina validation
 
 The HiDPI trial on M4 MacBook Air / macOS 26.5 exposed a 744 × 1134 logical mode backed by 1488 × 2268 pixels, with NSScreen scale 2. Timeout restoration returned to the original 1710 × 1107 logical / 3420 × 2214 framebuffer mode. The strict production checks also cover confirmed restoration, control-pipe closure and the GUI switch. Local display evidence does not prove the delivered UU stream resolution; the iPad user must assess that separately.
+
+## v0.3.1 Dock identity validation
+
+Before the fix, the GUI and virtual-display helper both registered as regular applications. After the fix, the GUI registers as regular (one Dock icon) and the helper as prohibited (no Dock icon). Timeout, control-pipe closure, GUI confirmation and manual restoration passed on M4 / macOS 26.5. The 2x portrait framebuffer remains unchanged.

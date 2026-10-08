@@ -168,6 +168,9 @@ static NSDictionary *Probe(void) {
 
 static int Helper(NSString *directory, double seconds) {
     signal(SIGPIPE, SIG_IGN);
+    // The helper holds the virtual display but never owns a user interface.
+    // LSUIElement also prevents a transient Dock icon before main() starts.
+    [NSApplication.sharedApplication setActivationPolicy:NSApplicationActivationPolicyProhibited];
     NSDictionary *probe = Probe(); NSArray *displays = probe[@"displays"];
     if (displays.count != 1 || [displays[0][@"mirrorOf"] unsignedIntValue] != 0 || ![displays[0][@"main"] boolValue]) {
         Emit(@{ @"event": @"error", @"message": @"当前版本支持一块未开启镜像的显示器。请断开额外显示器后重试。", @"probe": probe }); return 2;
@@ -270,7 +273,7 @@ static int Helper(NSString *directory, double seconds) {
         [session record:@{ @"event": @"error", @"message": @"系统没有实际进入 Retina 高清竖屏状态，正在恢复。", @"displays": Displays() }];
         [session finish:@"verification-failed"];
     }
-    [session record:@{ @"event": @"ready", @"virtualDisplayID": @(virtualID), @"physicalDisplayID": @(physicalID),
+    [session record:@{ @"event": @"ready", @"helperActivationPolicy": @(NSApp.activationPolicy), @"virtualDisplayID": @(virtualID), @"physicalDisplayID": @(physicalID),
                        @"seconds": @(MAX(0, session.deadline.timeIntervalSinceNow)), @"mode": actual, @"pixelScale": @2, @"displays": Displays(), @"probe": Probe() }];
     NSMutableData *buffer = [NSMutableData data];
     NSFileHandle.fileHandleWithStandardInput.readabilityHandler = ^(NSFileHandle *handle) {

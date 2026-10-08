@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — Dock fix
+
+- Keep the virtual-display helper out of the Dock, leaving one icon for the main window.
+- Mark the bundle as an agent at launch; the normal GUI explicitly promotes itself to a regular application while its helper stays prohibited.
+
+
 ## 0.3.0 — Retina beta
 
 - Fix HiDPI mode construction: use 744 × 1134 desktop dimensions with a 1488 × 2268 maximum framebuffer.
