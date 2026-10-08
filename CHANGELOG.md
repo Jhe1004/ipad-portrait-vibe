@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — Retina beta
+
+- Fix HiDPI mode construction: use 744 × 1134 desktop dimensions with a 1488 × 2268 maximum framebuffer.
+- Select only the exact 2× portrait mode and verify actual framebuffer dimensions before reporting success.
+- Keep the existing desktop, window and text size while increasing pixel count fourfold.
+- Show Retina 2× status in the app and document the distinction between Mac rendering and UU stream quality.
+
+
 ## 0.2.0 — public beta
 
 - Name the project **iPad Portrait Vibe** and document its portrait iPad + UU Remote + Mac vibe-coding use case.

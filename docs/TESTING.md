@@ -31,3 +31,7 @@ The helper should enter portrait mode, then restore the original mode after ten 
 ## End-to-end manual check
 
 On the iPad, check portrait orientation, the selected remote display, editor/terminal readability, and pointer alignment near all four screen edges. Confirm the timer only when the picture and input both work. Then restore through the main button and through closing the app. Test sleep/wake and docking separately before relying on those cases.
+
+## v0.3.0 local Retina validation
+
+The HiDPI trial on M4 MacBook Air / macOS 26.5 exposed a 744 × 1134 logical mode backed by 1488 × 2268 pixels, with NSScreen scale 2. Timeout restoration returned to the original 1710 × 1107 logical / 3420 × 2214 framebuffer mode. The strict production checks also cover confirmed restoration, control-pipe closure and the GUI switch. Local display evidence does not prove the delivered UU stream resolution; the iPad user must assess that separately.

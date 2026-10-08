@@ -12,6 +12,12 @@ I like holding my iPad vertically while using UU Remote to control my MacBook an
 
 iPad Portrait Vibe gives the Mac a portrait-shaped desktop. Click once to switch; click again to restore the original display settings. UU Remote continues to handle the remote connection. This app only changes the desktop layout.
 
+## Sharper text in v0.3.0
+
+The earlier build rendered only 744 × 1134 pixels, making text softer when enlarged on an iPad. v0.3.0 corrects the HiDPI virtual mode dimensions. It keeps the same desktop and text size while rendering twice as many pixels in each direction, for four times the pixel count. The app verifies the actual 2× framebuffer before reporting success and restores if that mode is unavailable.
+
+Local Mac testing verifies the mode and restoration. The UU client must still transmit sufficient resolution and quality; end-to-end clarity depends on its capture path and settings.
+
 ## Use it
 
 1. Download the ZIP from **Releases**, unzip it, and drag **iPad Portrait Vibe.app** into **Applications**. The app is self-contained.
@@ -31,7 +37,7 @@ The menu bar provides a second route to the switch and **恢复并退出** (Rest
 | Macs | Universal executable with arm64 and x86_64 slices. Runtime testing has been on an M4 MacBook Air. Intel Macs have not been runtime-tested. |
 | Display setup | One display, with existing mirroring disabled. Multiple displays are rejected before changes are made. |
 | iPad preset | Designed around the portrait aspect ratio of iPad mini 7. Other iPad sizes may retain some empty space. |
-| Desktop mode | **744 × 1134**. On the tested Mac, this is a 1× mode; native Retina sharpness is not yet implemented. |
+| Desktop mode | **744 × 1134 desktop points / 1488 × 2268 framebuffer pixels, Retina 2×**. Locally verified; delivered sharpness also depends on UU quality and bitrate settings. |
 | UU Remote | The author reports that the original prototype works well in their iPad mini 7 + UU Remote setup. This is not a guarantee for every UU client version or device. |
 | UI language | Chinese buttons, with English translations in these instructions. |
 

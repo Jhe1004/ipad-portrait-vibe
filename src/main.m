@@ -36,6 +36,20 @@ static NSDictionary *ModeInfo(CGDisplayModeRef mode) {
               @"pixelWidth": @(CGDisplayModeGetPixelWidth(mode)), @"pixelHeight": @(CGDisplayModeGetPixelHeight(mode)),
               @"modeID": @(CGDisplayModeGetIODisplayModeID(mode)), @"refreshRate": @(CGDisplayModeGetRefreshRate(mode)) };
 }
+static NSDictionary *MirrorModeInfo(CGDirectDisplayID source, CGDirectDisplayID physical) {
+    CGDisplayModeRef mode = CGDisplayCopyDisplayMode(source);
+    // Some WindowServer versions omit the mirror-source mode. The mirrored
+    // physical display must expose the same effective framebuffer dimensions.
+    if (!mode && CGDisplayMirrorsDisplay(physical) == source)
+        mode = CGDisplayCopyDisplayMode(physical);
+    NSDictionary *info = ModeInfo(mode);
+    if (mode) CFRelease(mode);
+    return info;
+}
+static BOOL RetinaMode(NSDictionary *info) {
+    return [info[@"width"] unsignedIntValue] == 744 && [info[@"height"] unsignedIntValue] == 1134 &&
+           [info[@"pixelWidth"] unsignedIntValue] == 1488 && [info[@"pixelHeight"] unsignedIntValue] == 2268;
+}
 static NSArray *Displays(void) {
     CGDirectDisplayID ids[32]; uint32_t count = 0;
     if (CGGetOnlineDisplayList(32, ids, &count) != kCGErrorSuccess) return @[];
@@ -187,7 +201,9 @@ static int Helper(NSString *directory, double seconds) {
     }
     IPVirtualSettings *settings = [[NSClassFromString(@"CGVirtualDisplaySettings") alloc] init];
     settings.hiDPI = 1;
-    IPVirtualMode *mode = [[NSClassFromString(@"CGVirtualDisplayMode") alloc] initWithWidth:1488 height:2268 refreshRate:60];
+    // A HiDPI virtual mode takes desktop points, while the descriptor takes
+    // maximum framebuffer pixels. Passing pixels here prevents the 2x mode.
+    IPVirtualMode *mode = [[NSClassFromString(@"CGVirtualDisplayMode") alloc] initWithWidth:744 height:1134 refreshRate:60];
     settings.modes = @[mode];
     if (![session.virtualDisplay applySettings:settings]) {
         [session record:@{ @"event": @"error", @"message": @"macOS 拒绝了竖屏分辨率。" }]; [session finish:@"settings-failed"];
@@ -218,9 +234,14 @@ static int Helper(NSString *directory, double seconds) {
     CGDisplayModeRef preferred = NULL;
     for (id item in (__bridge NSArray *)mirrorModeList) {
         CGDisplayModeRef m = (__bridge CGDisplayModeRef)item; [mirrorModes addObject:ModeInfo(m)];
-        if (CGDisplayModeGetWidth(m) == 744 && CGDisplayModeGetHeight(m) == 1134) {
+        if (RetinaMode(ModeInfo(m))) {
             if (!preferred || CGDisplayModeGetPixelWidth(m) > CGDisplayModeGetPixelWidth(preferred)) preferred = m;
         }
+    }
+    if (!preferred) {
+        if (mirrorModeList) CFRelease(mirrorModeList);
+        [session record:@{ @"event": @"error", @"message": @"系统没有提供所需的 Retina 高清模式，正在恢复。" }];
+        [session finish:@"retina-mode-unavailable"];
     }
     if (preferred) {
         CGDisplayConfigRef retinaConfig = NULL; CGError retinaError = CGBeginDisplayConfiguration(&retinaConfig);
@@ -236,21 +257,21 @@ static int Helper(NSString *directory, double seconds) {
     NSDate *geometryLimit = [NSDate dateWithTimeIntervalSinceNow:3];
     while (geometryLimit.timeIntervalSinceNow > 0) {
         CGRect observed = CGDisplayBounds(virtualID);
-        if (observed.size.width == 744 && observed.size.height == 1134) break;
+        if (observed.size.width == 744 && observed.size.height == 1134 &&
+            RetinaMode(MirrorModeInfo(virtualID, physicalID))) break;
         [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
     }
-    CGDisplayModeRef actualMode = CGDisplayCopyDisplayMode(virtualID); NSDictionary *actual = ModeInfo(actualMode);
-    if (actualMode) CFRelease(actualMode);
-    // On this macOS release CGDisplayCopyDisplayMode may return NULL for a
-    // virtual mirror source. Verify the effective drawable geometry instead.
+    NSDictionary *actual = MirrorModeInfo(virtualID, physicalID);
+    // Geometry alone can match a low-resolution mode. Require the actual
+    // 2x framebuffer as well before reporting a successful switch.
     CGRect effectiveBounds = CGDisplayBounds(virtualID);
     BOOL portrait = effectiveBounds.size.width == 744 && effectiveBounds.size.height == 1134;
-    if (!portrait || CGDisplayMirrorsDisplay(physicalID) != virtualID) {
-        [session record:@{ @"event": @"error", @"message": @"系统没有实际进入预期的竖屏镜像状态，正在恢复。", @"displays": Displays() }];
+    if (!portrait || !RetinaMode(actual) || CGDisplayMirrorsDisplay(physicalID) != virtualID) {
+        [session record:@{ @"event": @"error", @"message": @"系统没有实际进入 Retina 高清竖屏状态，正在恢复。", @"displays": Displays() }];
         [session finish:@"verification-failed"];
     }
     [session record:@{ @"event": @"ready", @"virtualDisplayID": @(virtualID), @"physicalDisplayID": @(physicalID),
-                       @"seconds": @(MAX(0, session.deadline.timeIntervalSinceNow)), @"mode": actual, @"displays": Displays(), @"probe": Probe() }];
+                       @"seconds": @(MAX(0, session.deadline.timeIntervalSinceNow)), @"mode": actual, @"pixelScale": @2, @"displays": Displays(), @"probe": Probe() }];
     NSMutableData *buffer = [NSMutableData data];
     NSFileHandle.fileHandleWithStandardInput.readabilityHandler = ^(NSFileHandle *handle) {
         NSData *data = handle.availableData;
@@ -300,7 +321,7 @@ static int Helper(NSString *directory, double seconds) {
     self.window.title = @"iPad Portrait Vibe"; self.window.delegate = self; self.window.releasedWhenClosed = NO;
     [self label:@"▯" size:68 frame:NSMakeRect(165, 338, 100, 90)];
     [self label:@"iPad Portrait Vibe" size:23 frame:NSMakeRect(25, 305, 380, 35)];
-    [self label:@"用竖屏 iPad 远控 Mac，随时 Vibe Coding" size:14 frame:NSMakeRect(25, 270, 380, 28)];
+    [self label:@"Retina 高清竖屏 · 用 iPad 远控 Mac 做 Vibe Coding" size:14 frame:NSMakeRect(25, 270, 380, 28)];
     self.toggle = [NSButton buttonWithTitle:@"切换到 iPad 竖屏" target:self action:@selector(toggleMode:)];
     self.toggle.frame = NSMakeRect(65, 203, 300, 52); self.toggle.bezelStyle = NSBezelStyleRounded;
     self.toggle.font = [NSFont systemFontOfSize:20 weight:NSFontWeightSemibold]; self.toggle.keyEquivalent = @"\r";
@@ -384,7 +405,7 @@ static int Helper(NSString *directory, double seconds) {
         NSDictionary *event = [NSJSONSerialization JSONObjectWithData:line options:0 error:nil];
         if ([event[@"event"] isEqual:@"ready"]) {
             self.ready = YES; self.busy = NO; self.toggle.enabled = YES; self.toggle.title = @"恢复正常电脑模式";
-            self.status.stringValue = @"已进入竖屏。请在 iPad 上检查画面和鼠标位置。"; self.keep.hidden = NO;
+            self.status.stringValue = @"已进入 Retina 高清竖屏（2×）。\n请在 iPad 上检查清晰度和点击位置。"; self.keep.hidden = NO;
             // The helper owns the authoritative recovery deadline.
             self.deadline = [NSDate dateWithTimeIntervalSinceNow:[event[@"seconds"] doubleValue]];
             [self.window center]; [self showWindow:nil];
