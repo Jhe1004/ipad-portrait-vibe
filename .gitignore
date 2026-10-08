@@ -1,0 +1,13 @@
+/build/
+/dist/
+.DS_Store
+*.log
+*.app/
+*.zip
+*.dmg
+*_runtime/
+original-display.plist
+events.jsonl
+result.json
+github_known_hosts
+__pycache__/

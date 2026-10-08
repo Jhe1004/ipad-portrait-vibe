@@ -1,0 +1,24 @@
+name: Build macOS app
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build universal app
+        run: bash build.sh
+      - name: Verify architectures and metadata
+        run: |
+          lipo -verify_arch arm64 x86_64 "build/iPad Portrait Vibe.app/Contents/MacOS/iPadPortrait"
+          plutil -lint "build/iPad Portrait Vibe.app/Contents/Info.plist"
+      - name: Package app
+        run: bash package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iPad-Portrait-Vibe-macos-universal
+          path: dist/*
