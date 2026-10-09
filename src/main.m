@@ -3,11 +3,11 @@
 #import <unistd.h>
 #import <math.h>
 
-static NSString *const ScreenName = @"iPad Portrait Vibe";
+static NSString *const ScreenName = @"VibeScreen";
 static NSString *RunDirectory(void) {
     NSString *override = NSProcessInfo.processInfo.environment[@"IPV_DATA_ROOT"];
     NSString *support = [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *root = override.length ? override : [support stringByAppendingPathComponent:@"iPad Portrait Vibe/01_runs"];
+    NSString *root = override.length ? override : [support stringByAppendingPathComponent:@"VibeScreen/01_runs"];
     if (!root.length) return nil;
     NSError *error = nil;
     if (![NSFileManager.defaultManager createDirectoryAtPath:root withIntermediateDirectories:YES attributes:nil error:&error]) return nil;
@@ -321,11 +321,11 @@ static int Helper(NSString *directory, double seconds) {
     self.window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 430, 450)
         styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable
         backing:NSBackingStoreBuffered defer:NO];
-    self.window.title = @"iPad Portrait Vibe"; self.window.delegate = self; self.window.releasedWhenClosed = NO;
+    self.window.title = @"VibeScreen"; self.window.delegate = self; self.window.releasedWhenClosed = NO;
     [self label:@"▯" size:68 frame:NSMakeRect(165, 338, 100, 90)];
-    [self label:@"iPad Portrait Vibe" size:23 frame:NSMakeRect(25, 305, 380, 35)];
-    [self label:@"Retina 高清竖屏 · 用 iPad 远控 Mac 做 Vibe Coding" size:14 frame:NSMakeRect(25, 270, 380, 28)];
-    self.toggle = [NSButton buttonWithTitle:@"切换到 iPad 竖屏" target:self action:@selector(toggleMode:)];
+    [self label:@"VibeScreen" size:23 frame:NSMakeRect(25, 305, 380, 35)];
+    [self label:@"Retina 高清竖屏 · 用 UU 远控 Mac 做 Vibe Coding" size:14 frame:NSMakeRect(25, 270, 380, 28)];
+    self.toggle = [NSButton buttonWithTitle:@"切换到高清竖屏" target:self action:@selector(toggleMode:)];
     self.toggle.frame = NSMakeRect(65, 203, 300, 52); self.toggle.bezelStyle = NSBezelStyleRounded;
     self.toggle.font = [NSFont systemFontOfSize:20 weight:NSFontWeightSemibold]; self.toggle.keyEquivalent = @"\r";
     [self.window.contentView addSubview:self.toggle];
@@ -334,11 +334,11 @@ static int Helper(NSString *directory, double seconds) {
     self.keep = [NSButton buttonWithTitle:@"画面正常，保持竖屏" target:self action:@selector(keepMode:)];
     self.keep.frame = NSMakeRect(105, 66, 220, 36); self.keep.bezelStyle = NSBezelStyleRounded; self.keep.hidden = YES;
     [self.window.contentView addSubview:self.keep];
-    [self label:@"UU 中如仍看到横屏，请选择「iPad Portrait Vibe」。" size:11 frame:NSMakeRect(20, 15, 390, 36)];
+    [self label:@"UU 中如仍看到横屏，请选择「VibeScreen」。" size:11 frame:NSMakeRect(20, 15, 390, 36)];
     NSMenu *appMenu = [NSMenu new];
     [appMenu addItemWithTitle:@"恢复并退出" action:@selector(quit:) keyEquivalent:@"q"];
     NSMenu *bar = [NSMenu new]; NSMenuItem *root = [NSMenuItem new]; root.submenu = appMenu; [bar addItem:root]; NSApp.mainMenu = bar;
-    self.statusItem = [NSStatusBar.systemStatusBar statusItemWithLength:NSVariableStatusItemLength]; self.statusItem.button.title = @"▯ iPad";
+    self.statusItem = [NSStatusBar.systemStatusBar statusItemWithLength:NSVariableStatusItemLength]; self.statusItem.button.title = @"▯ Vibe";
     NSMenu *menu = [NSMenu new];
     [menu addItemWithTitle:@"显示开关窗口" action:@selector(showWindow:) keyEquivalent:@""];
     [menu addItemWithTitle:@"切换 / 恢复" action:@selector(toggleMode:) keyEquivalent:@""];
@@ -408,7 +408,7 @@ static int Helper(NSString *directory, double seconds) {
         NSDictionary *event = [NSJSONSerialization JSONObjectWithData:line options:0 error:nil];
         if ([event[@"event"] isEqual:@"ready"]) {
             self.ready = YES; self.busy = NO; self.toggle.enabled = YES; self.toggle.title = @"恢复正常电脑模式";
-            self.status.stringValue = @"已进入 Retina 高清竖屏（2×）。\n请在 iPad 上检查清晰度和点击位置。"; self.keep.hidden = NO;
+            self.status.stringValue = @"已进入 Retina 高清竖屏（2×）。\n请在移动设备上检查清晰度和点击位置。"; self.keep.hidden = NO;
             // The helper owns the authoritative recovery deadline.
             self.deadline = [NSDate dateWithTimeIntervalSinceNow:[event[@"seconds"] doubleValue]];
             [self.window center]; [self showWindow:nil];
@@ -445,7 +445,7 @@ static int Helper(NSString *directory, double seconds) {
         NSDictionary *result = @{ @"restored": @(restored), @"helperExit": @(code), @"displays": Displays(),
                                   @"error": self.lastError ?: @"", @"detail": detail };
         [JSONText(result) writeToFile:[self.directory stringByAppendingPathComponent:@"result.json"] atomically:YES encoding:NSUTF8StringEncoding error:nil];
-        self.busy = NO; self.ready = NO; self.toggle.enabled = YES; self.toggle.title = @"切换到 iPad 竖屏"; self.keep.hidden = YES;
+        self.busy = NO; self.ready = NO; self.toggle.enabled = YES; self.toggle.title = @"切换到高清竖屏"; self.keep.hidden = YES;
         self.status.stringValue = self.lastError ?: (restored ? @"已恢复原来的显示设置" : @"未确认恢复成功，请打开系统设置 → 显示器检查。" );
         self.countdown.stringValue = @"试切换后，120 秒内未确认会自动恢复。";
         [self.window center];

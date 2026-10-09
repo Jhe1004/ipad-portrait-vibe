@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430" role="img" aria-label="iPad Portrait Vibe: a portrait iPad remote workspace for coding on a Mac">
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430" role="img" aria-label="VibeScreen: a portrait mobile remote workspace for coding on a Mac">
 <rect width="1100" height="430" rx="24" fill="#eff4fb"/>
-<text x="52" y="76" fill="#163158" font-family="sans-serif" font-size="38" font-weight="700">iPad Portrait Vibe</text>
-<text x="52" y="112" fill="#536c89" font-family="sans-serif" font-size="20">Portrait iPad · UU Remote · Mac · Vibe Coding</text>
+<text x="52" y="76" fill="#163158" font-family="sans-serif" font-size="38" font-weight="700">VibeScreen</text>
+<text x="52" y="112" fill="#536c89" font-family="sans-serif" font-size="20">Mobile devices · UU Remote · Mac · Vibe Coding</text>
 <rect x="64" y="172" width="380" height="202" rx="14" fill="#233d62"/>
 <rect x="80" y="188" width="348" height="163" rx="4" fill="#dce8f7"/>
 <rect x="206" y="188" width="97" height="163" fill="#3b6bc1"/>

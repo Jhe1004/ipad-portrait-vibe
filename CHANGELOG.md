@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0 — VibeScreen
+
+- Rename the app and repository to **VibeScreen** / `vibe-screen`.
+- Describe the purpose as mobile devices controlling a Mac through NetEase UU Remote for Vibe Coding. The author also reports successful use from a phone.
+- Update window text, virtual display name, build scripts, downloads, and bilingual documentation.
+- Retain the verified Retina 2× preset, confirmation timer, restoration protocol, and background helper Dock fix. The preset is fixed; automatic device sizing is not implemented.
+- Keep the existing bundle identifier so the renamed app retains its identity. New local runs use the VibeScreen support folder; existing recovery records are preserved.
+
 ## 0.3.1 — Dock fix
 
 - Keep the virtual-display helper out of the Dock, leaving one icon for the main window.
